@@ -1,60 +1,64 @@
 # Meta-analysis Optimization
 
-> Plantilla y workflow para conducir meta-análisis médicos siguiendo PRISMA 2020, optimizada para reducir trabajo repetitivo y mantener trazabilidad completa.
+> Monorepo para conducir meta-análisis médicos siguiendo PRISMA 2020 con workflow optimizado, skills automatizados de Claude Code, y mejora continua de la metodología.
 
 ## ⚡ TL;DR
 
-Este es un **template repository**. No trabajes directo aquí. Para cada meta-análisis nuevo:
+Este repo contiene:
+- **`_template/`** — los archivos plantilla (STATUS.md, protocolo.md, CSVs, etc.) que se copian al iniciar un meta-análisis nuevo
+- **`projects/`** — donde viven tus meta-análisis reales (uno por carpeta)
+- **`.claude/skills/`** — 9 skills automatizados que Claude Code usa para guiarte por PRISMA paso a paso
+- **`docs/`** — lecciones aprendidas + changelog del workflow
 
-1. En GitHub, click en **"Use this template" → Create a new repository**
-2. Nombra tu repo: `meta-<tema>-<intervencion>` (ej. `meta-diabetes-metformina`)
-3. Clona localmente: `git clone <url> && cd <repo>`
-4. Crea venv: `python3 -m venv .venv && .venv/bin/pip install -r requirements.txt`
-5. Abre Claude Code y dile: "iniciemos meta-análisis sobre <tema>"
+## 🚀 Iniciar un meta-análisis nuevo
 
-Cada meta-análisis vive en su propio repo — quedan independientes, versionados, y puedes compartirlos uno por uno con coautores.
+```bash
+cd ~/projects/metanalysis-optimization
+./scripts/new-project.sh meta-<tema>-<intervencion>
+# ej: ./scripts/new-project.sh meta-diabetes-metformina
+```
 
-## 🧠 Filosofía
+Esto crea `projects/meta-<tema>-<intervencion>/` con todos los archivos plantilla. Luego edita el STATUS.md con tu PICO y abre Claude Code:
 
-- **PRISMA es la norma**, no una guía. Cada decisión queda registrada con justificación.
-- **Trazabilidad sobre velocidad**: si no se puede reproducir, no sirve.
-- **Protocolo vivo**: se redacta en paralelo a la búsqueda, no después.
-- **Un paper = una nota .md** con frontmatter completo (DOI como ID primario).
-- **Datos crudos en CSV**, narrativa después. Toda transformación va en script versionado.
+> "trabajemos en projects/meta-diabetes-metformina, empecemos el protocolo"
 
-## 📐 Estructura del proyecto
+## 📐 Estructura
 
 ```
-meta-<tema>/
-├── README.md                          # este archivo (para tu proyecto, customizado)
-├── CLAUDE.md                          # workflow + reglas para Claude Code
-├── STATUS.md                          # ⭐ panel de control: dónde estás, qué sigue
-├── .claude/skills/                    # 9 skills automatizados (ver abajo)
-├── protocolo/
-│   ├── protocolo.md                   # PICO + métodos (PRISMA-P 2015)
-│   └── prospero-submission.md         # texto para formulario PROSPERO
-├── busqueda/
-│   ├── strategy.md                    # strings de búsqueda por DB
-│   └── results-<db>.csv               # resultados por base
-├── extraccion/
-│   ├── screening.csv                  # decisiones T/A + full-text + razones
-│   ├── papers/                        # 1 .md por paper incluido
-│   │   └── doi-10-XXXX-YYYY.md
-│   ├── extraction.csv                 # datos cuantitativos por outcome
-│   └── rob.csv                        # riesgo de sesgo dominio por dominio
-├── analisis/
-│   ├── stats.py                       # script meta-análisis reproducible
-│   ├── results-<outcome>.md           # resultados por outcome
-│   ├── grade-summary.md               # tabla GRADE / Summary of Findings
-│   ├── prisma-flow.md                 # diagrama PRISMA mermaid
-│   ├── forest-<outcome>.png
-│   └── funnel-<outcome>.png
-├── manuscrito.md                      # draft del manuscrito (genera /manuscript-prisma)
-├── requirements.txt                   # deps Python
+metanalysis-optimization/
+├── README.md                              # este archivo
+├── CLAUDE.md                              # reglas globales del workflow para Claude
+├── .claude/skills/                        # 9 skills compartidos por todos los proyectos
+│   ├── prisma-search.md
+│   ├── screen-paper.md
+│   ├── extract-data.md
+│   ├── assess-rob.md
+│   ├── run-metaanalysis.md
+│   ├── prisma-flow.md
+│   ├── prospero-register.md
+│   ├── grade-evidence.md
+│   └── manuscript-prisma.md
+├── _template/                             # archivos que se copian al iniciar proyecto
+│   ├── STATUS.md
+│   ├── protocolo/protocolo.md
+│   ├── busqueda/strategy.md
+│   ├── extraccion/{screening,extraction,rob}.csv
+│   ├── extraccion/papers/
+│   └── analisis/{stats.py,prisma-flow.md}
+├── projects/                              # ⭐ TUS META-ANÁLISIS REALES
+│   ├── meta-diabetes-metformina/
+│   ├── meta-hta-amlodipino/
+│   └── ...
+├── docs/
+│   ├── lessons-learned.md                 # qué hemos aprendido haciendo meta-análisis
+│   └── changelog.md                       # historial de cambios al workflow
+├── scripts/
+│   └── new-project.sh                     # inicializa un proyecto nuevo desde _template
+├── requirements.txt                       # deps Python compartidas
 └── .gitignore
 ```
 
-## 🔄 Workflow detallado (paso a paso)
+## 🔄 Workflow PRISMA 2020 — 13 pasos
 
 ```mermaid
 flowchart TD
@@ -63,172 +67,72 @@ flowchart TD
     C --> D[4. Búsqueda sistemática]
     D --> E[5. Deduplicación]
     E --> F[6. Screening T/A]
-    F --> G[7. Full-text screening]
-    G --> H[8. Extracción de datos]
+    F --> G[7. Full-text]
+    G --> H[8. Extracción]
     H --> I[9. Riesgo de sesgo]
     I --> J[10. Meta-análisis estadístico]
     J --> K[11. GRADE]
     K --> L[12. Diagrama PRISMA]
     L --> M[13. Manuscrito]
-    M --> N[14. Submission]
 ```
 
-### Paso 1 — Define PICO
-
-Edita `STATUS.md` y `protocolo/protocolo.md` con tu **P** (población), **I** (intervención), **C** (comparador), **O** (outcomes primario y secundarios).
-
-### Paso 2 — Protocolo completo
-
-Completa todas las secciones de `protocolo/protocolo.md` (PRISMA-P 2015 checklist). Si te falta algo, Claude te pregunta.
-
-### Paso 3 — Pre-registro PROSPERO
-
-```
-> /prospero-register
-```
-
-Claude lee tu protocolo y genera `protocolo/prospero-submission.md` con el texto exacto para cada uno de los 32 campos del formulario PROSPERO. Tú copias y pegas en https://www.crd.york.ac.uk/prospero/. Toma ~30 min.
-
-### Paso 4 — Búsqueda sistemática
-
-```
-> /prisma-search
-```
-
-Claude:
-- Lee tu PICO
-- Identifica MeSH terms y sinónimos
-- Construye strings para PubMed, Cochrane, Embase
-- Ejecuta búsqueda en PubMed vía MCP biomcp (con tu NCBI API key)
-- Guarda resultados en `busqueda/results-*.csv`
-- Reporta conteos para el diagrama PRISMA
-
-### Paso 5 — Deduplicación
-
-```
-> /prisma-search dedup
-```
-
-Consolida todos los CSVs en `busqueda/results-merged-dedup.csv`, deduplica por DOI > PMID > título normalizado.
-
-### Paso 6 — Screening T/A
-
-```
-> /screen-paper batch
-```
-
-Por cada paper:
-- Lee título + abstract
-- Aplica criterios de inclusión/exclusión
-- Decisión: include / exclude / maybe (→ full-text)
-- Razón documentada (categorías estandarizadas)
-- Fila en `extraccion/screening.csv`
-
-### Paso 7 — Full-text
-
-Para los marcados "maybe" o "include", consigues el PDF (Zotero hace casi todo automático). Luego:
-
-```
-> /screen-paper fulltext doi:10.XXXX/YYYY
-```
-
-Decisión final + razón.
-
-### Paso 8 — Extracción de datos
-
-```
-> /extract-data doi:10.XXXX/YYYY
-```
-
-Por cada paper incluido:
-- Crea `extraccion/papers/doi-XXX.md` con frontmatter completo (autor, año, PICO, n, efecto, CI, p)
-- Crea nota espejo en tu vault de Obsidian (`Metaanalisis/papers/`)
-- Agrega fila a `extraccion/extraction.csv` para meta
-
-### Paso 9 — Riesgo de sesgo
-
-```
-> /assess-rob doi:10.XXXX/YYYY
-```
-
-ROB-2 (para RCT) o Newcastle-Ottawa (observacional). 5 dominios con justificación cada uno.
-
-### Paso 10 — Meta-análisis estadístico
-
-```
-> /run-metaanalysis outcome:<nombre>
-```
-
-Cuando tienes ≥3 estudios para un outcome. Claude:
-- Calcula pooled effect (random effects, DerSimonian-Laird)
-- Heterogeneidad (I², τ², Q)
-- Genera forest plot
-- Genera funnel plot + Egger (si k≥10)
-- Sensibilidad leave-one-out
-- Guarda todo en `analisis/`
-
-### Paso 11 — GRADE
-
-```
-> /grade-evidence
-```
-
-Por cada outcome, aplica los 5 dominios de GRADE y genera tabla Summary of Findings.
-
-### Paso 12 — Diagrama PRISMA
-
-```
-> /prisma-flow
-```
-
-Cuenta automáticamente desde los CSVs y genera diagrama mermaid + tabla de conteos por razón de exclusión. Valida coherencia (si los números no cuadran, alerta).
-
-### Paso 13 — Manuscrito
-
-```
-> /manuscript-prisma
-```
-
-Genera `manuscrito.md` siguiendo PRISMA 2020 (27 items): Abstract estructurado, Introduction, Methods, Results, Discussion, Conclusions, + checklist PRISMA marcado. Pulla automáticamente del protocolo, CSVs y resultados.
-
-### Paso 14 — Submission
-
-Manual: revisas, pulvas Discussion (lo más subjetivo), formateas referencias según la revista target, sometes.
+| Paso | Skill | Output |
+|---|---|---|
+| 1 | (manual) | `STATUS.md`, sección PICO |
+| 2 | (manual) | `protocolo/protocolo.md` |
+| 3 | `/prospero-register` | `protocolo/prospero-submission.md` |
+| 4 | `/prisma-search` | `busqueda/results-*.csv` |
+| 5 | `/prisma-search dedup` | `busqueda/results-merged-dedup.csv` |
+| 6 | `/screen-paper` | filas en `extraccion/screening.csv` |
+| 7 | `/screen-paper fulltext` | actualiza `screening.csv` |
+| 8 | `/extract-data` | `extraccion/papers/doi-*.md` + fila en `extraction.csv` |
+| 9 | `/assess-rob` | filas en `extraccion/rob.csv` |
+| 10 | `/run-metaanalysis` | `analisis/stats.py`, plots, `results-*.md` |
+| 11 | `/grade-evidence` | `analisis/grade-summary.md` |
+| 12 | `/prisma-flow` | `analisis/prisma-flow.md` |
+| 13 | `/manuscript-prisma` | `manuscrito.md` |
 
 ## 💾 ¿Cómo retomar dónde me quedé?
 
-Todo el estado vive en archivos del repo:
-
-- `STATUS.md` — panel de control con check-list de avance
-- `extraccion/screening.csv` — qué papers ya screened, cuáles quedan
-- `extraccion/papers/` — qué papers ya extraídos
-- `analisis/prisma-flow.md` — conteos actualizados
-- Commits de git — historial completo de qué hiciste cuándo
+Todo el estado vive en archivos versionados:
+- `STATUS.md` de cada proyecto = panel de control
+- `extraccion/screening.csv` = qué papers ya screened
+- `analisis/prisma-flow.md` = conteos actualizados
+- Git log = historial completo
 
 Cuando vuelvas:
-
 ```bash
-cd ~/projects/meta-<tema>
+cd ~/projects/metanalysis-optimization
 git pull
-# Abre Claude Code y di: "qué sigue en este meta-análisis?"
-# Claude lee STATUS.md + CSVs y te dice exactamente dónde retomas
+# Abre Claude Code y di: "qué sigue en projects/meta-diabetes-metformina?"
+# Claude lee STATUS.md + CSVs y te dice el siguiente paso concreto
 ```
 
-## 🧰 MCPs requeridos (configuración usuario)
+## 🔁 Mejora continua
 
-Estos MCPs deben estar configurados en Claude Code (los configura una sola vez globalmente, sirven para todos tus meta-análisis):
+**Filosofía:** la metodología evoluciona con la práctica. Cuando hacemos meta-análisis y descubrimos que algo se puede simplificar, automatizar o mejorar, actualizamos el workflow:
+
+1. Identificas el problema (Claude o tú) — "este skill me pidió X redundante"
+2. Claude edita el skill/plantilla correspondiente
+3. Cambio queda en `docs/lessons-learned.md` con fecha y justificación
+4. Actualizamos `docs/changelog.md` si es cambio mayor
+5. Commit y push
+
+**Los proyectos en `projects/` se benefician inmediatamente** de las mejoras al workflow (comparten `.claude/skills/`, `CLAUDE.md`, etc.).
+
+## 🧰 MCPs requeridos (config a nivel usuario)
 
 | MCP | Para qué |
 |---|---|
-| **biomcp** | PubMed + ClinicalTrials.gov + variantes (con NCBI API key) |
+| **biomcp** | PubMed + ClinicalTrials.gov + variantes (NCBI API key configurada) |
 | **openalex** | 240M papers + redes de citas |
 | **zotero** | Lectura/escritura biblioteca local |
 | **github** | Versionado |
-| **Scholar Gateway** (Anthropic) | Snowballing semántico |
-| **Consensus** (Anthropic) | Evidence synthesis preliminar |
-| **Context7** (Anthropic) | Docs Python (scipy, statsmodels) |
+| **Scholar Gateway** | Snowballing semántico |
+| **Consensus** | Evidence synthesis preliminar |
+| **Context7** | Docs Python (scipy, statsmodels) |
 
-Acceso a Obsidian es directo vía filesystem (no requiere MCP).
+Acceso a Obsidian es directo vía filesystem.
 
 ## 📚 Referencias
 
@@ -240,4 +144,4 @@ Acceso a Obsidian es directo vía filesystem (no requiere MCP).
 
 ## 📄 Licencia
 
-MIT — usa, modifica, comparte. Si esta plantilla te ayudó, considera abrir un PR con mejoras.
+MIT

@@ -62,35 +62,34 @@ Asistente para conducir meta-análisis siguiendo PRISMA 2020 y redactando el pro
 6. **Todo commit a GitHub con mensaje descriptivo** del paso PRISMA al que pertenece.
 7. **Cada exclusión documenta la razón** en el CSV de screening — sin "no aplica" sin justificar.
 
-## Estructura del proyecto
+## Estructura del monorepo
 
 ```
-metaanalisis-<tema>/
-├── CLAUDE.md                            # este archivo (copiar de template)
-├── .claude/
-│   └── skills/                          # workflow scripts
-├── protocolo/
-│   ├── protocolo.md                     # PICO + métodos (PRISMA-P)
-│   └── prospero-registration.md         # número y fecha si pre-registrado
-├── busqueda/
-│   ├── strategy.md                      # strings exactos por DB (reproducible)
-│   ├── results-pubmed.csv               # exportación PubMed
-│   ├── results-cochrane.csv             # exportación Cochrane
-│   └── results-merged-dedup.csv         # consolidado deduplicado
-├── extraccion/
-│   ├── screening.csv                    # T/A screening (incluir/excluir + razón)
-│   ├── papers/                          # 1 nota markdown por incluido
-│   │   └── doi-10-XXXX-YYYY.md
-│   ├── extraction.csv                   # datos cuantitativos para meta
-│   └── rob.csv                          # riesgo de sesgo
-├── analisis/
-│   ├── stats.py                         # script reproducible (versionado)
-│   ├── prisma-flow.md                   # diagrama
-│   ├── forest-plot.png                  # output
-│   ├── funnel-plot.png                  # output
-│   └── sensibilidad.md                  # análisis post-hoc
-├── manuscrito.md                        # borrador final (PRISMA checklist)
-└── requirements.txt                     # deps Python
+metanalysis-optimization/
+├── README.md
+├── CLAUDE.md                            # este archivo — reglas globales
+├── .claude/skills/                      # 9 skills compartidos
+├── _template/                           # archivos plantilla (copiados al iniciar proyecto)
+│   ├── STATUS.md
+│   ├── protocolo/protocolo.md
+│   ├── busqueda/strategy.md
+│   ├── extraccion/{screening,extraction,rob}.csv
+│   └── analisis/{stats.py,prisma-flow.md}
+├── projects/                            # ⭐ meta-análisis reales (uno por carpeta)
+│   ├── meta-<tema>-<intervencion>/
+│   │   ├── STATUS.md
+│   │   ├── protocolo/
+│   │   ├── busqueda/
+│   │   ├── extraccion/papers/
+│   │   ├── analisis/
+│   │   └── manuscrito.md
+│   └── (otros)
+├── docs/
+│   ├── lessons-learned.md               # mejoras al workflow con fecha
+│   └── changelog.md                     # versionado del workflow
+├── scripts/
+│   └── new-project.sh                   # crea proyecto nuevo desde _template
+└── requirements.txt
 ```
 
 ## Convenciones de naming
@@ -174,14 +173,22 @@ tags: ["..."]
 
 ## Cómo empezar un nuevo meta-análisis
 
-1. Copia esta plantilla: `cp -r metaanalisis-template metaanalisis-<tema>`
-2. Edita `protocolo/protocolo.md` con tu PICO completo
-3. Invoca `/prisma-search` para construir los strings de búsqueda
-4. Pre-registra en PROSPERO (recomendado)
-5. Ejecuta búsquedas y guarda CSVs en `busqueda/`
-6. Importa a Zotero (carpeta del proyecto)
-7. Invoca `/screen-paper` por cada paper o batch
-8. Para incluidos, invoca `/extract-data` y `/assess-rob`
-9. Cuando tengas ≥3 estudios para el outcome, invoca `/run-metaanalysis`
-10. Genera diagrama PRISMA con `/prisma-flow`
-11. Redacta manuscrito siguiendo PRISMA 2020 checklist
+1. Desde la raíz del repo: `./scripts/new-project.sh meta-<tema>-<intervencion>`
+2. Eso crea `projects/meta-<tema>-<intervencion>/` con todos los archivos plantilla copiados desde `_template/`
+3. Editar `projects/meta-X/STATUS.md` con título + PICO
+4. Editar `projects/meta-X/protocolo/protocolo.md` con el protocolo completo PRISMA-P
+5. Decir a Claude: "trabajemos en projects/meta-X, empecemos el workflow PRISMA"
+
+A partir de ahí Claude lee `STATUS.md` y aplica los skills correspondientes paso a paso.
+
+## Mejora continua del workflow
+
+Cuando trabajando en un proyecto identifiques que un skill, plantilla o convención se puede mejorar:
+
+1. Dile a Claude: "esto se puede mejorar porque..."
+2. Claude edita el archivo correspondiente en `.claude/skills/` o `_template/`
+3. Claude documenta el cambio en `docs/lessons-learned.md` con fecha y justificación
+4. Si es cambio mayor, también actualiza `docs/changelog.md`
+5. Commit con tag `[workflow] descripcion del cambio`
+
+Los proyectos en `projects/` heredan automáticamente las mejoras (comparten skills y plantillas vía el monorepo).
