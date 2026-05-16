@@ -26,6 +26,7 @@ Asistente para conducir meta-análisis siguiendo PRISMA 2020 y redactando el pro
 
 ## Skills disponibles (invocar con /<skill>)
 
+**Core workflow:**
 - `/prisma-search` — construye strings de búsqueda para PubMed/Cochrane/Embase desde un PICO
 - `/screen-paper` — screening sistemático título/abstract o full-text con justificación
 - `/extract-data` — crea nota estructurada del paper en `extraccion/papers/doi-*.md`
@@ -33,13 +34,19 @@ Asistente para conducir meta-análisis siguiendo PRISMA 2020 y redactando el pro
 - `/run-metaanalysis` — ejecuta meta-análisis con Python (random/fixed, forest, funnel, sensibilidad)
 - `/prisma-flow` — actualiza diagrama PRISMA y verifica conteos
 
+**Pasos administrativos / submission:**
+- `/prospero-register` — genera texto completo para los 32 campos del formulario PROSPERO (sin API; copy-paste guiado)
+- `/grade-evidence` — aplica GRADE (5 dominios) por outcome y genera tabla Summary of Findings para manuscrito
+- `/manuscript-prisma` — genera draft de manuscrito siguiendo PRISMA 2020 (27 items) desde los datos ya extraídos
+
 ## MCP servers que usa el workflow
 
 | MCP | Para qué |
 |---|---|
-| **pubmed** | Búsqueda E-utilities, recuperar abstracts, MeSH terms |
+| **biomcp** | PubMed E-utilities + ClinicalTrials.gov + MyVariant.info (con NCBI API key) |
+| **openalex** | Catálogo libre 240M+ papers, redes de citas, alternativa a Web of Science |
 | **zotero** | Lectura/escritura de biblioteca, exportar BibTeX, gestionar colecciones |
-| **obsidian** | Crear nota por paper (1 paper = 1 archivo), tags, links cruzados |
+| **Obsidian (filesystem directo)** | Crear nota por paper (1 paper = 1 archivo), tags, links cruzados — sin MCP, acceso directo al vault |
 | **claude.ai Scholar Gateway** | Snowballing de citas, búsqueda semántica |
 | **claude.ai Consensus** | Síntesis de evidencia preliminar por pregunta |
 | **github** | Versionar protocolo + análisis (reproducibilidad obligatoria) |
