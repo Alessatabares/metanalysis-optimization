@@ -1,0 +1,1 @@
+doi,pmid,first_author,year,study_design,country,n_total,n_intervention,n_control,age_mean,age_sd,female_pct,intervention,intervention_dose,comparator,follow_up_months,outcome,effect_type,effect,ci_low,ci_high,p_value,events_intervention,n_intervention_outcome,events_control,n_control_outcome,mean_intervention,sd_intervention,mean_control,sd_control,notes
